@@ -27,6 +27,22 @@ income_tx <- get_acs(
 ```
 
 ```{r}
+#| message: false
+edu_state <- get_acs(
+  geography = "state",
+  variables = c(
+    total = "B15003_001",
+    bachelors = "B15003_022",
+    masters = "B15003_023",
+    professional = "B15003_024",
+    doctorate = "B15003_025"
+  ),
+  summary_var = "B15003_001",
+  year = 2020
+)
+```
+
+```{r}
 ggplot(income_tx) +
   geom_sf(aes(fill = estimate), color = "white", linewidth = 0.1) +
   scale_fill_viridis_c(
@@ -44,5 +60,37 @@ ggplot(income_tx) +
     plot.title = element_text(face = "bold"),
     plot.caption = element_text(hjust = 0),
     legend.position = "right"
+  )
+```
+
+```{r}
+edu_state |>
+  group_by(GEOID, NAME) |>
+  summarise(
+    percent_bachelors_or_higher =
+      sum(estimate[variable %in% c("bachelors", "masters", "professional", "doctorate")]) /
+      first(summary_est) * 100,
+    .groups = "drop"
+  ) |>
+  ggplot(aes(
+    x = reorder(NAME, percent_bachelors_or_higher),
+    y = percent_bachelors_or_higher
+  )) +
+  geom_col(fill = "deeppink") +
+  coord_flip() +
+  scale_y_continuous(labels = \(x) paste0(x, "%")) +
+  labs(
+    title = "Bachelor's Degree Attainment by State",
+    x = NULL,
+    y = "Adults with a bachelor's degree or higher",
+    caption = "Source: U.S. Census Bureau, 2020 American Community Survey (ACS) 5-year estimates."
+  ) +
+  theme_minimal() +
+  theme(
+    panel.grid.minor = element_blank(),
+    plot.title = element_text(face = "bold"),
+    plot.caption = element_text(hjust = 0),
+    axis.text = element_text(color = "deeppink4"),
+    axis.title = element_text(color = "deeppink4")
   )
 ```
