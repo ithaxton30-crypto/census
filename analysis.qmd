@@ -2,5 +2,47 @@
 title: "Analyzing US Census Data"
 format: html
 author: Isabella Thaxton
+execute:
+  echo: false
 ---
 
+
+```{r}
+#| message: false
+library(tidyverse)
+library(tidycensus)
+library(sf)
+```
+
+```{r}
+#| message: false
+#| cache: true
+income_tx <- get_acs(
+  geography = "county",
+  variables = "B19013_001",
+  state = "TX",
+  year = 2020,
+  geometry = TRUE
+)
+```
+
+```{r}
+ggplot(income_tx) +
+  geom_sf(aes(fill = estimate), color = "white", linewidth = 0.1) +
+  scale_fill_viridis_c(
+    option = "magma",
+    labels = scales::label_dollar(),
+    na.value = "grey90"
+  ) +
+  labs(
+    title = "Median household income by Texas county",
+    fill = "Median household income",
+    caption = "Source: U.S. Census Bureau, 2020 American Community Survey (ACS) 5-year estimates."
+  ) +
+  theme_void() +
+  theme(
+    plot.title = element_text(face = "bold"),
+    plot.caption = element_text(hjust = 0),
+    legend.position = "right"
+  )
+```
